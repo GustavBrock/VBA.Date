@@ -2,7 +2,7 @@ Attribute VB_Name = "DateTest"
 Option Explicit
 '
 ' DateTest
-' Version 1.2.4
+' Version 1.2.5
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -689,3 +689,30 @@ Public Function VbeVersion() As String
 
 End Function
 
+' List 100 entries from the current second with a step of 1ms.
+'
+' 2021-08-02. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Sub TestMillisecond()
+
+    Dim MSecs(0 To 99)  As Date
+    
+    Dim Index           As Integer
+    Dim ThisMsec        As Date
+    Dim LastMsec        As Date
+    
+    ' Record the millisecond times.
+    For Index = LBound(MSecs) To UBound(MSecs)
+        Do
+            ThisMsec = NowMsec
+        Loop Until ThisMsec > LastMsec
+        MSecs(Index) = ThisMsec
+        LastMsec = ThisMsec
+    Next
+    
+    ' List the millisecond times.
+    For Index = LBound(MSecs) To UBound(MSecs)
+        Debug.Print DebugDate(MSecs(Index))
+    Next
+    
+End Sub
