@@ -222,7 +222,7 @@ End Function
 
 ' Returns the primo calendar date of the specified financial/fiscal year.
 ' Returns the primo calender date of the current financial year, if no
-' financial date is specified.
+' financial year is specified.
 '
 ' 2021-05-09. Gustav Brock. Cactus Data ApS, CPH.
 '
@@ -257,7 +257,7 @@ End Function
 
 ' Returns the ultimo calendar date of the specified financial/fiscal year.
 ' Returns the ultimo calender date of the current financial year, if no
-' financial date is specified.
+' financial year is specified.
 '
 ' 2021-05-09. Gustav Brock. Cactus Data ApS, CPH.
 '
