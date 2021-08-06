@@ -2,7 +2,7 @@ Attribute VB_Name = "DateMsec"
 Option Explicit
 '
 ' DateMsec
-' Version 1.3.1
+' Version 1.3.2
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -71,6 +71,10 @@ Private Declare PtrSafe Function GetTimeZoneInformation Lib "Kernel32.dll" ( _
     As Long
     
 Private Declare PtrSafe Function TimeBeginPeriod Lib "winmm.dll" Alias "timeBeginPeriod" ( _
+    ByVal uPeriod As Long) _
+    As Long
+    
+Private Declare PtrSafe Function TimeEndPeriod Lib "winmm.dll" Alias "timeEndPeriod" ( _
     ByVal uPeriod As Long) _
     As Long
 
@@ -815,11 +819,14 @@ End Function
 '
 ' with millisecond resolution.
 '
-' 2016-09-12. Gustav Brock, Cactus Data ApS, CPH.
+' 2021-08-06. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function Msec( _
     Optional ByVal ResultType As DtMsecResult = DtMsecResult.dtMillisecondOnly) _
     As Date
+    
+    ' Timer resolution in milliseconds.
+    Const Period        As Long = 1
 
     Static SysTime      As SystemTime
     Static MsecInit     As Long
@@ -833,8 +840,8 @@ Public Function Msec( _
     Dim MsecCurrent     As Long
     Dim MsecOffset      As Long
   
-    ' Set resolution of timer to 1 ms.
-    TimeBeginPeriod 1
+    ' Set resolution of timer.
+    TimeBeginPeriod Period
     
     MsecCurrent = TimeGetTime()
   
@@ -860,6 +867,9 @@ Public Function Msec( _
         ' Retrieve offset from initial time to current time.
         MsecOffset = MsecCurrent - MsecInit
     End If
+    
+    ' Reset resolution of timer.
+    TimeEndPeriod Period
     
     With SysTime
         ' Now, current system time equals initial system time corrected for
