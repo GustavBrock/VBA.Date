@@ -2,7 +2,7 @@ Attribute VB_Name = "DateSpan"
 Option Explicit
 '
 ' DateSpan
-' Version 1.6.2
+' Version 1.6.3
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -27,7 +27,7 @@ Option Explicit
 '
 ' Name              Epoch                Calculation VBD                Calculation JD               Calculation RJD             Value at 2016-01-16 06:24:00
 ' ----------------  -------------------  ----------------------------  ----------------------------  --------------------------  ----------------------------
-' Visual Basic VBD  AD  100-01-01 00:00  0                             JD - 2415018.5                RJD - 15018.5               42385.2666666667
+' Visual Basic VBD  AD 1899-12-30 00:00  0                             JD - 2415018.5                RJD - 15018.5               42385.2666666667
 ' Julian Date JD    BC 4713-01-01 12:00  VBD + 2415018.5               0                             RJD + 2400000               2457403.76666667
 ' Reduced JD        AD 1858-11-16 12:00  VBD + 15018.5                 JD - 2400000                  0                           57403.7666666667 [7][8]
 ' Modified JD       AD 1858-11-17 00:00  VBD + 15018                   JD - 2400000.5                RJD - 0.5                   57403.2666666667 Introduced by SAO in 1957
@@ -63,8 +63,8 @@ Option Explicit
     Private Const MsdOffset         As Double = 9496.5
     
 ' Epochs. For information only.
-    ' VBD Visual Basic Date Epoch.
-    Private Const VbdEpoch          As Date = #1/1/100#
+    ' VBD Visual Basic Date Epoch (#12/30/1899 12:00:00 AM#).
+    Private Const VbdEpoch          As Date = #12:00:00 AM#
     ' RJD Reduced Julian Date Epoch.
     Private Const RjdEpoch          As Date = #11/16/1858 12:00:00 PM#
     ' MJD Modified Julian Date Epoch.
