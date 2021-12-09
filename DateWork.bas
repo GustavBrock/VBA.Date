@@ -2,7 +2,7 @@ Attribute VB_Name = "DateWork"
 Option Explicit
 '
 ' DateWork
-' Version 1.2.0
+' Version 1.2.2
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -22,11 +22,13 @@ Option Explicit
 '
 
 ' Common constants.
-    
+
     ' Workdays per week.
     Public Const WorkDaysPerWeek    As Long = 5
     ' Average count of holidays per week maximum.
-    Public Const HolidaysPerWeek    As Long = 1
+    ' For normal holiday sequences, use 1.
+    ' For taking company week-long private holidays into account, use 4 or even 5.
+    Public Const HolidaysPerWeek    As Long = 5
 
 ' Adds Number of full workdays to Date1 and returns the found date.
 ' Number can be positive, zero, or negative.
@@ -39,7 +41,7 @@ Option Explicit
 '
 ' Requires table Holiday with list of holidays.
 '
-' 2015-12-19. Gustav Brock. Cactus Data ApS, CPH.
+' 2021-12-09. Gustav Brock. Cactus Data ApS, CPH.
 '
 Public Function DateAddWorkdays( _
     ByVal Number As Long, _
@@ -69,9 +71,14 @@ Public Function DateAddWorkdays( _
         Else
             ' Retrieve array with holidays between Date1 and Date1 + MaxDayDiff.
             ' Calculate the maximum calendar days per workweek.
-            MaxDayDiff = Number * DaysPerWeek / (WorkDaysPerWeek - HolidaysPerWeek)
+            If (WorkDaysPerWeek - HolidaysPerWeek) > 1 Then
+                MaxDayDiff = Number * DaysPerWeek / (WorkDaysPerWeek - HolidaysPerWeek)
+            Else
+                MaxDayDiff = Number * DaysPerWeek
+            End If
             ' Add one week to cover cases where a week contains multiple holidays.
             MaxDayDiff = MaxDayDiff + Sgn(MaxDayDiff) * DaysPerWeek
+            
             If Sign > 0 Then
                 If DateDiff(Interval, Date1, MaxDateValue) < MaxDayDiff Then
                     MaxDayDiff = DateDiff(Interval, Date1, MaxDateValue)
@@ -272,7 +279,7 @@ End Function
 '
 ' Requires table Holiday with list of holidays.
 '
-' 2015-12-18. Gustav Brock, Cactus Data ApS, CPH.
+' 2021-12-09. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function DatesHoliday( _
     ByVal Date1 As Date, _
@@ -309,6 +316,9 @@ Public Function DatesHoliday( _
         
         Days = Records.RecordCount
         If Days > 0 Then
+            ' Get the full record count.
+            Records.MoveLast
+            Days = Records.RecordCount
             ' As repeated calls may happen, do a movefirst.
             Records.MoveFirst
             DayRows = Records.GetRows(Days)
@@ -338,7 +348,7 @@ End Function
 '
 ' Requires table Holiday with list of holidays.
 '
-' 2015-12-18. Gustav Brock, Cactus Data ApS, CPH.
+' 2021-12-09. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function HolidayCount( _
     ByVal Date1 As Date, _
@@ -351,6 +361,7 @@ Public Function HolidayCount( _
 
     Set Records = RecordsHoliday(Date1, Date2)
     If Records.RecordCount > 0 Then
+        Records.MoveLast
         Holidays = Records.RecordCount
     End If
     Records.Close
@@ -367,7 +378,7 @@ End Function
 '
 ' Requires table Holiday with list of holidays.
 '
-' 2015-12-18. Gustav Brock, Cactus Data ApS, CPH.
+' 2021-12-09. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function RecordsHoliday( _
     ByVal Date1 As Date, _
@@ -376,26 +387,38 @@ Public Function RecordsHoliday( _
     As DAO.Recordset
         
     ' The table that holds the holidays.
-    Const Table         As String = "Holiday"
+    Const Table         As String = "tblHoliday"
     ' The field of the table that holds the dates of the holidays.
-    Const Field         As String = "Date"
+    Const Field         As String = "HolidayDate"
     
     Dim Records         As DAO.Recordset
     
+    Dim FirstDate       As Date
+    Dim LastDate        As Date
+    Dim ReverseValues   As Boolean
     Dim Sql             As String
-    Dim SqlDate1        As String
-    Dim SqlDate2        As String
+    Dim SqlFirstDate    As String
+    Dim SqlLastDate     As String
     Dim Order           As String
     
-    SqlDate1 = Format(Date1, "\#yyyy\/mm\/dd\#")
-    SqlDate2 = Format(Date2, "\#yyyy\/mm\/dd\#")
-    ReverseOrder = ReverseOrder Xor (DateDiff("d", Date1, Date2) < 0)
+    ReverseValues = (DateDiff("d", Date1, Date2) < 0)
+    If ReverseValues Then
+        FirstDate = Date2
+        LastDate = Date1
+    Else
+        FirstDate = Date1
+        LastDate = Date2
+    End If
+    
+    SqlFirstDate = Format(FirstDate, "\#yyyy\/mm\/dd\#")
+    SqlLastDate = Format(LastDate, "\#yyyy\/mm\/dd\#")
+    ReverseOrder = ReverseOrder Xor ReverseValues
     Order = IIf(ReverseOrder, "Desc", "Asc")
-        
+
     Sql = "Select " & Field & " From " & Table & " " & _
-        "Where " & Field & " Between " & SqlDate1 & " And " & SqlDate2 & " " & _
+        "Where " & Field & " Between " & SqlFirstDate & " And " & SqlLastDate & " " & _
         "Order By 1 " & Order
-        
+
     Set Records = CurrentDb.OpenRecordset(Sql, dbOpenSnapshot)
         
     Set RecordsHoliday = Records
