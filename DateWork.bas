@@ -2,7 +2,7 @@ Attribute VB_Name = "DateWork"
 Option Explicit
 '
 ' DateWork
-' Version 1.2.2
+' Version 1.2.3
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -16,6 +16,7 @@ Option Explicit
 '
 ' Required modules:
 '   DateBase
+'   DateCalc
 '
 ' Required additionally:
 '   Table of holidays
@@ -28,7 +29,7 @@ Option Explicit
     ' Average count of holidays per week maximum.
     ' For normal holiday sequences, use 1.
     ' For taking company week-long private holidays into account, use 4 or even 5.
-    Public Const HolidaysPerWeek    As Long = 5
+    Public Const HolidaysPerWeek    As Long = 1
 
 ' Adds Number of full workdays to Date1 and returns the found date.
 ' Number can be positive, zero, or negative.
@@ -372,13 +373,54 @@ Public Function HolidayCount( _
  
 End Function
 
+' Returns True if the passed date is a holiday as recorded in the Holiday table.
+'
+' Requires table Holiday with list of holidays.
+'
+' 2021-12-11. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function IsDateHoliday( _
+    ByVal Date1 As Date) _
+    As Boolean
+    
+    Dim IsHoliday   As Boolean
+    
+    IsHoliday = CBool(HolidayCount(Date1, Date1))
+    
+    IsDateHoliday = IsHoliday
+
+End Function
+
+' Returns True if the passed date is a holiday as recorded in the Holiday table or
+' a weekend day ("off day") as specified by parameter WeekendType.
+'
+' Default check is for the days of a long (Western) weekend, Saturday and Sunday.
+' Requires table Holiday with list of holidays.
+'
+' 2021-12-11. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function IsDateWorkday( _
+    ByVal Date1 As Date, _
+    Optional ByVal WeekendType As DtWeekendType = DtWeekendType.dtLongWeekend) _
+    As Boolean
+    
+    Dim IsWorkday   As Boolean
+    
+    If Not IsDateWeekend(Date1, WeekendType) Then
+        IsWorkday = Not IsDateHoliday(Date1)
+    End If
+
+    IsDateWorkday = IsWorkday
+
+End Function
+
 ' Returns the holidays between Date1 and Date2 as a recordset.
 ' The holidays are returned as a recordset with the
 ' dates ordered ascending, optionally descending.
 '
 ' Requires table Holiday with list of holidays.
 '
-' 2021-12-09. Gustav Brock, Cactus Data ApS, CPH.
+' 2021-12-11. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function RecordsHoliday( _
     ByVal Date1 As Date, _
@@ -387,9 +429,9 @@ Public Function RecordsHoliday( _
     As DAO.Recordset
         
     ' The table that holds the holidays.
-    Const Table         As String = "tblHoliday"
+    Const Table         As String = "Holiday"
     ' The field of the table that holds the dates of the holidays.
-    Const Field         As String = "HolidayDate"
+    Const Field         As String = "Date"
     
     Dim Records         As DAO.Recordset
     

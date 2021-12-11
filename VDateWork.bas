@@ -2,7 +2,7 @@ Attribute VB_Name = "VDateWork"
 Option Explicit
 '
 ' DateWork
-' Version 1.2.0
+' Version 1.2.3
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -153,6 +153,55 @@ Public Function VDatePreviousWorkday( _
     End If
     
     VDatePreviousWorkday = ResultDate
+
+End Function
+
+' Returns True if the passed date is a holiday as recorded in the Holiday table.
+' Returns Null if any parameter is invalid.
+'
+' Requires table Holiday with list of holidays.
+'
+' 2021-12-11. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function VIsDateHoliday( _
+    ByVal Date1 As Date) _
+    As Boolean
+    
+    Dim Result      As Variant
+    
+    If IsDateExt(Date1) Then
+        Result = IsDateHoliday(CDate(Date1))
+    Else
+        Result = Null
+    End If
+    
+    VIsDateHoliday = Result
+
+End Function
+
+' Returns True if the passed date is a holiday as recorded in the Holiday table or
+' a weekend day ("off day") as specified by parameter WeekendType.
+' Returns Null if any parameter is invalid.
+'
+' Default check is for the days of a long (Western) weekend, Saturday and Sunday.
+' Requires table Holiday with list of holidays.
+'
+' 2021-12-11. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function VIsDateWorkday( _
+    ByVal Date1 As Date, _
+    Optional ByVal WeekendType As DtWeekendType = DtWeekendType.dtLongWeekend) _
+    As Boolean
+    
+    Dim Result      As Variant
+    
+    If IsDateExt(Date1) Then
+        Result = IsDateWorkday(CDate(Date1))
+    Else
+        Result = Null
+    End If
+
+    VIsDateWorkday = Result
 
 End Function
 
