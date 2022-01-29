@@ -2,7 +2,7 @@ Attribute VB_Name = "DateBase"
 Option Explicit
 '
 ' DateBase
-' Version 1.4.2
+' Version 1.4.3
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -571,20 +571,27 @@ End Function
 '
 ' The case of Value will be ignored.
 '
-' 2021-01-06. Gustav Brock, Cactus Data ApS, CPH.
+' 2022-01-29. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function IsIntervalSetting( _
     ByVal Value As String, _
     Optional ByVal Extended As Boolean) _
     As Boolean
     
-    Dim Interval    As DtInterval
-    Dim Symbol      As String
-    Dim Result      As Boolean
+    Dim Interval        As DtInterval
+    Dim LastInterval    As DtInterval
+    Dim Symbol          As String
+    Dim Result          As Boolean
+    
+    If Extended = False Then
+        LastInterval = DtInterval.[_LastNative]
+    Else
+        LastInterval = DtInterval.[_Last]
+    End If
     
     ' Exit with True if Value is a valid interval setting.
     If Value <> "" Then
-        For Interval = DtInterval.[_First] To DtInterval.[_Last]
+        For Interval = DtInterval.[_First] To LastInterval
             Symbol = IntervalSetting(Interval, Extended)
             If LCase(Value) = Symbol Then
                 Result = True
