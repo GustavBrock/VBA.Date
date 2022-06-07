@@ -2,7 +2,7 @@ Attribute VB_Name = "DateText"
 Option Explicit
 '
 ' DateText
-' Version 1.3.5
+' Version 1.3.6
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -778,6 +778,39 @@ Public Function FormatExt( _
     
 End Function
 
+' Format the count of days, hours, and minutes of Date1 as
+' hours and minutes.
+' By default, the local time separator is used.
+' Optionally, specify a custom time separator.
+'
+' Example:
+'   Date1:      #10:03# + #20:01#
+'   returns:    30:04
+'
+' 2022-06-07. Cactus Data ApS, CPH.
+'
+Public Function FormatHourMinute( _
+    ByVal Date1 As Date, _
+    Optional ByVal Separator As String) _
+    As String
+
+    Dim TextHour        As String
+    Dim TextMinute      As String
+    Dim TextHourMinute  As String
+    
+    TextHour = CStr(Fix(Date1) * 24 + Hour(Date1))
+    ' Maintain a leading zero for the minute count.
+    TextMinute = Right("0" & CStr(Minute(Date1)), 2)
+    
+    If Separator = "" Then
+        Separator = FormatSystemTimeSeparator
+    End If
+    TextHourMinute = TextHour & Separator & TextMinute
+    
+    FormatHourMinute = TextHourMinute
+  
+End Function
+
 ' Formats a time duration rounded to 1/100 second with trailing zeroes
 ' and with no leading hours and minutes if these are zero.
 ' This format is typical for sports results.
@@ -1258,6 +1291,38 @@ Public Function ParseDate( _
     End If
 
     ParseDate = Value
+
+End Function
+
+' Parse a text expression for hours and minutes.
+' By default, the local time separator is used.
+' Optionally, specify a custom time separator.
+'
+' Example:
+'   Value = ParseHourMinute("200:45")
+'   ' Value -> #1900-01-07 08:45:00#
+'
+' 2022-06-07. Cactus Data ApS, CPH.
+'
+Public Function ParseHourMinute( _
+    ByVal Text As String, _
+    Optional ByVal Separator As String) _
+    As Date
+    
+    Dim Parts   As Variant
+    Dim Value   As Date
+
+    If IsDate(Text) Then
+        Value = TimeValue(Text)
+    Else
+        If Separator = "" Then
+            Separator = FormatSystemTimeSeparator
+        End If
+        Parts = Split(Text & Separator, Separator, 2)
+        Value = TimeSerial(Val(Parts(0)), Val(Parts(1)), 0)
+    End If
+    
+    ParseHourMinute = Value
 
 End Function
 
