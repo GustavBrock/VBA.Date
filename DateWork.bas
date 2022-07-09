@@ -2,7 +2,7 @@ Attribute VB_Name = "DateWork"
 Option Explicit
 '
 ' DateWork
-' Version 1.2.3
+' Version 1.2.4
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -17,6 +17,7 @@ Option Explicit
 ' Required modules:
 '   DateBase
 '   DateCalc
+'   DateFind
 '
 ' Required additionally:
 '   Table of holidays
@@ -345,6 +346,46 @@ Public Function DatesHoliday( _
     
 End Function
 
+' Returns the first workday of the month of Date1.
+' Optionally, if WorkOnHolidays is True, holidays are regarded as workdays.
+'
+' Requires table Holiday with list of holidays.
+'
+' 2022-07-09. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function DateWorkdayMonthFirst( _
+    ByVal Date1 As Date, _
+    Optional ByVal WorkOnHolidays As Boolean) _
+    As Date
+    
+    Dim ResultDate  As Date
+
+    ResultDate = DateNextWorkday(DatePreviousMonthUltimo(Date1), WorkOnHolidays)
+    
+    DateWorkdayMonthFirst = ResultDate
+
+End Function
+
+' Returns the last workday of the month of Date1.
+' Optionally, if WorkOnHolidays is True, holidays are regarded as workdays.
+'
+' Requires table Holiday with list of holidays.
+'
+' 2022-07-09. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function DateWorkdayMonthLast( _
+    ByVal Date1 As Date, _
+    Optional ByVal WorkOnHolidays As Boolean) _
+    As Date
+    
+    Dim ResultDate  As Date
+
+    ResultDate = DatePreviousWorkday(DateNextMonthPrimo(Date1), WorkOnHolidays)
+    
+    DateWorkdayMonthLast = ResultDate
+
+End Function
+
 ' Returns the count of holidays between two dates.
 '
 ' Requires table Holiday with list of holidays.
@@ -391,8 +432,8 @@ Public Function IsDateHoliday( _
 
 End Function
 
-' Returns True if the passed date is a holiday as recorded in the Holiday table or
-' a weekend day ("off day") as specified by parameter WeekendType.
+' Returns True if the passed date is not a holiday as recorded in the Holiday table
+' or a weekend day ("off day") as specified by parameter WeekendType.
 '
 ' Default check is for the days of a long (Western) weekend, Saturday and Sunday.
 ' Requires table Holiday with list of holidays.
@@ -467,7 +508,7 @@ Public Function RecordsHoliday( _
     
 End Function
 
-' Returns the count of holidays of the month of Date1.
+' Returns the count of workdays of the month of Date1.
 ' Optionally, if WorkOnHolidays is True, holidays are regarded as workdays.
 '
 ' Requires table Holiday with list of holidays.
@@ -492,7 +533,7 @@ Public Function WorkdaysInMonth( _
     
 End Function
 
-' Returns the count of holidays of the months between the
+' Returns the count of workdays of the months between the
 ' month of Date1 and the month of Date2.
 ' Optionally, if WorkOnHolidays is True, holidays are regarded as workdays.
 '

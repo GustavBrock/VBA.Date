@@ -2,7 +2,7 @@ Attribute VB_Name = "VDateWork"
 Option Explicit
 '
 ' DateWork
-' Version 1.2.3
+' Version 1.2.4
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -156,6 +156,56 @@ Public Function VDatePreviousWorkday( _
 
 End Function
 
+' Returns the first workday of the month of Date1.
+' Optionally, if WorkOnHolidays is True, holidays are regarded as workdays.
+' Returns Null if any parameter is invalid.
+'
+' Requires table Holiday with list of holidays.
+'
+' 2022-07-09. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function VDateWorkdayMonthFirst( _
+    ByVal Date1 As Variant, _
+    Optional ByVal WorkOnHolidays As Boolean) _
+    As Variant
+    
+    Dim ResultDate  As Variant
+
+    If IsDateExt(Date1) Then
+        ResultDate = DateWorkdayMonthFirst(CDate(Date1), WorkOnHolidays)
+    Else
+        ResultDate = Null
+    End If
+    
+    VDateWorkdayMonthFirst = ResultDate
+
+End Function
+
+' Returns the last workday of the month of Date1.
+' Optionally, if WorkOnHolidays is True, holidays are regarded as workdays.
+' Returns Null if any parameter is invalid.
+'
+' Requires table Holiday with list of holidays.
+'
+' 2022-07-09. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function VDateWorkdayMonthLast( _
+    ByVal Date1 As Variant, _
+    Optional ByVal WorkOnHolidays As Boolean) _
+    As Variant
+    
+    Dim ResultDate  As Variant
+
+    If IsDateExt(Date1) Then
+        ResultDate = DateWorkdayMonthLast(CDate(Date1), WorkOnHolidays)
+    Else
+        ResultDate = Null
+    End If
+    
+    VDateWorkdayMonthLast = ResultDate
+
+End Function
+
 ' Returns True if the passed date is a holiday as recorded in the Holiday table.
 ' Returns Null if any parameter is invalid.
 '
@@ -181,12 +231,11 @@ End Function
 
 ' Returns True if the passed date is a holiday as recorded in the Holiday table or
 ' a weekend day ("off day") as specified by parameter WeekendType.
-' Returns Null if any parameter is invalid.
 '
 ' Default check is for the days of a long (Western) weekend, Saturday and Sunday.
 ' Requires table Holiday with list of holidays.
 '
-' 2021-12-11. Gustav Brock, Cactus Data ApS, CPH.
+' 2022-07-09. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Function VIsDateWorkday( _
     ByVal Date1 As Date, _
@@ -196,7 +245,7 @@ Public Function VIsDateWorkday( _
     Dim Result      As Variant
     
     If IsDateExt(Date1) Then
-        Result = IsDateWorkday(CDate(Date1))
+        Result = IsDateWorkday(CDate(Date1), WeekendType)
     Else
         Result = Null
     End If
