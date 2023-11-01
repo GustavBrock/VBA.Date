@@ -2,7 +2,7 @@ Attribute VB_Name = "DateWork"
 Option Explicit
 '
 ' DateWork
-' Version 1.2.4
+' Version 1.2.5
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -506,6 +506,33 @@ Public Function RecordsHoliday( _
         
     Set RecordsHoliday = Records
     
+End Function
+
+' Find the workday number counting from the first Monday of the month.
+' Return Null for non-working days.
+'
+' 2023-11-01. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function WorkDayMonth( _
+    ByVal Date1 As Date) _
+    As Variant
+  
+    Dim DateFirst       As Date
+    Dim DayNumber       As Variant
+    
+    If Weekday(Date1, vbMonday) > 5 Then
+        DayNumber = Null
+    Else
+        DateFirst = DateWeekdayInMonthFirst(Date1, vbMonday)
+        If DateFirst > Date1 Then
+            ' Date1 belongs to the previous month.
+            DateFirst = DateWeekdayInMonthFirst(DateAdd("m", -1, Date1), vbMonday)
+        End If
+        DayNumber = 1 + DateDiffWorkdays(DateFirst, Date1)
+    End If
+  
+    WorkDayMonth = DayNumber
+  
 End Function
 
 ' Returns the count of workdays of the month of Date1.
