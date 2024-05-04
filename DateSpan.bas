@@ -2,7 +2,7 @@ Attribute VB_Name = "DateSpan"
 Option Explicit
 '
 ' DateSpan
-' Version 1.6.3
+' Version 1.6.4
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -25,7 +25,7 @@ Option Explicit
 
 ' Date conversion.
 '
-' Name              Epoch                Calculation VBD                Calculation JD               Calculation RJD             Value at 2016-01-16 06:24:00
+' Name              Epoch                Calculation VBD               Calculation JD                Calculation RJD             Value at 2016-01-16 06:24:00
 ' ----------------  -------------------  ----------------------------  ----------------------------  --------------------------  ----------------------------
 ' Visual Basic VBD  AD 1899-12-30 00:00  0                             JD - 2415018.5                RJD - 15018.5               42385.2666666667
 ' Julian Date JD    BC 4713-01-01 12:00  VBD + 2415018.5               0                             RJD + 2400000               2457403.76666667
@@ -36,6 +36,7 @@ Option Explicit
 ' Lilian Date       AD 1582-10-15 00:00  Int(VBD + 115858)             Int(JD - 2299159.5)           Int(RJD + 100841.5)         158243           Count of days of the Gregorian calendar
 ' Rata Die          BC    1-12-31 00:00  Int(VBD + 693594)             Int(JD - 1721424.5)           Int(RJD + 678576.5)         735979           Count of days of the Common Era
 ' dotNet            AD    1-01-01 00:00  (VBD + 693593) × 86400000     (JD - 1721425.5) × 86400000   (RJD + 678575.5) × 86400000 63588522240000   Count of days from 1-1-1 in milliseconds
+' Clarion Date      AD 1800-12-28 00:00  VBD + 36161                   JD - 2378857.5                RJD + 21142.5               78546,2666666667 Count of days
 ' Unix Time         AD 1970-01-01 00:00  (VBD - 25569) × 86400         (JD - 2440587.5) × 86400      (RJD - 40587.5) × 86400     1452925440       Count of seconds[10]
 ' Mars Sol Date MSD AD 1873-12-29 12:00  (VBD + 9496.5) / 1.0274912510 (JD - 2405522) / 1.0274912510 (RJD - 5522) / 1.0274912510 50493.63356      Count of Martian days
 ' Mars Sol Date MSD updated                                            (JD - 2405522.0025054) / 1.027491251                      50493.631438
@@ -57,6 +58,8 @@ Option Explicit
     Private Const RdOffset          As Long = 693594
     ' dotNet.
     Private Const DnOffset          As Long = 693593
+    ' Clarion Date.
+    Private Const CtOffset          As Long = 36161
     ' Unix Time.
     Private Const UtOffset          As Long = -25569
     ' Mars Sol Date.
@@ -75,6 +78,8 @@ Option Explicit
     Private Const DjdEpoch          As Date = #12/31/1899 12:00:00 PM#
     ' LJD Lilian Julian Date Epoch.
     Private Const LjdEpoch          As Date = #10/15/1582#
+    ' Clarion Date Epoch.
+    Private Const ClarionEpoch      As Date = #12/28/1800#
     ' Unix Time Epoch.
     Private Const UnixEpoch         As Date = #1/1/1970#
     ' MSD Mars Sol Date Epoch traditional.
@@ -178,6 +183,35 @@ Public Function Beat( _
     
 End Function
 
+' Returns the Clarion Time in days for a specified date.
+' UtcDate can be any Date value of VBA with a resolution of one millisecond.
+'
+' Examples:
+'    100-01-01 00:00:00.000 ->  -621273
+'    100-01-01 00:00:00.001 ->  -621272.999999988
+'    100-01-01 00:00:00.002 ->  -621272.999999977
+'   1899-12-30 00:00:00.000 ->    36161
+'   1800-12-28 00:00:00.000 ->        0
+'   2018-08-18 03:24:47.000 ->    79491.1422106482
+'   2018-08-18 18:24:47.000 ->    79491.7672106482
+'   9999-12-31 23:59:59.000 ->  2994626.99998843
+'   9999-12-31 23:59:59.998 ->  2994626.99999998
+'   9999-12-31 23:59:59.999 ->  2994626.99999999
+'
+' 2024-05-03. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function ClarionDate( _
+    ByVal UtcDate As Date) _
+    As Variant
+    
+    Dim Result  As Variant
+    
+    Result = Int((CDec(DateToTimespan(UtcDate) + CDec(CtOffset)) * MillisecondsPerDay * 10 ^ 8 + 0.5)) / MillisecondsPerDay / 10 ^ 8
+    
+    ClarionDate = Result
+    
+End Function
+
 ' Calculates the time from a count of .beats of the
 ' "Swatch Internet Time".
 ' A such .beat is 1/1000 of a day or 1 minute 26.4 seconds,
@@ -242,6 +276,30 @@ Public Function DateBeat( _
     
     DateBeat = TimeValue
 
+End Function
+
+' Returns the date of a specified Clarion Time with a resolution of 1 ms.
+' ClarionDate can be any value that will return a valid VBA Date value.
+'
+' Minimum value:  -621273
+'   ->  100-01-01 00:00:00.000
+' Maximum value:  2994626.99999999
+'   -> 9999-12-31 23:59:59.999
+'
+' 2024-05-03. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Function DateClarion( _
+    ByVal ClarionDate As Variant) _
+    As Date
+    
+    Dim Timespan    As Variant
+    Dim ResultDate  As Date
+    
+    Timespan = CDec(ClarionDate) - CDec(CtOffset)
+    ResultDate = DateFromTimespan(Timespan)
+    
+    DateClarion = ResultDate
+    
 End Function
 
 ' Returns the date of a specified dotNet DateTime value with a resolution of 1 ms.
@@ -514,7 +572,7 @@ Public Function DotNet( _
 
 End Function
 
-' Returns the dotNet time in ticks rounded to 00:00:000 of the day for a specified date.
+' Returns the dotNet time in ticks rounded to 00:00:00 of the day for a specified date.
 ' UtcDate can be any Date value of VBA.
 '
 ' Examples:

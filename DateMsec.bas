@@ -2,7 +2,7 @@ Attribute VB_Name = "DateMsec"
 Option Explicit
 '
 ' DateMsec
-' Version 1.3.2
+' Version 1.3.3
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -1088,13 +1088,13 @@ End Function
 
 ' Rounds off Date1 to the second by removing a millisecond portion.
 '
-' 2019-11-04. Gustav Brock, Cactus Data ApS, CPH.
+' 2024-05-04. Gustav Brock, Cactus Data ApS, CPH.
 '
 Public Sub RoundOffMilliseconds( _
     ByRef Date1 As Date)
     
     ConvDateToTimespan Date1
-    Date1 = Fix(Date1 * CDec(SecondsPerDay)) / SecondsPerDay
+    Date1 = Int(Date1 * CDec(SecondsPerDay)) / SecondsPerDay
     ConvTimespanToDate Date1
 
 End Sub
