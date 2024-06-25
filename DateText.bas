@@ -2,7 +2,7 @@ Attribute VB_Name = "DateText"
 Option Explicit
 '
 ' DateText
-' Version 1.3.6
+' Version 1.3.7
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -648,6 +648,42 @@ Public Function FormatDateIso8601( _
     End If
     
     FormatDateIso8601 = Result
+  
+End Function
+
+' Format the count of days, hours, and minutes of Date1 as
+' days, hours and minutes.
+' By default, the local time separator is used.
+' Optionally, specify a custom time separator.
+'
+' Example:
+'   Date1:      #10:03# + #20:01#
+'   returns:    1 06:04
+'
+' 2024-06-25. Cactus Data ApS, CPH.
+'
+Public Function FormatDayHourMinute( _
+    ByVal Date1 As Date, _
+    Optional ByVal Separator As String) _
+    As String
+
+    Dim TextDay             As String
+    Dim TextHour            As String
+    Dim TextMinute          As String
+    Dim TextDayHourMinute   As String
+    
+    TextDay = CStr(CLng(Fix(Date1)))
+    ' Maintain a leading zero for the hour count.
+    TextHour = Right("0" & CStr(Hour(Date1)), 2)
+    ' Maintain a leading zero for the minute count.
+    TextMinute = Right("0" & CStr(Minute(Date1)), 2)
+    
+    If Separator = "" Then
+        Separator = FormatSystemTimeSeparator
+    End If
+    TextDayHourMinute = TextDay & " " & TextHour & Separator & TextMinute
+    
+    FormatDayHourMinute = TextDayHourMinute
   
 End Function
 
