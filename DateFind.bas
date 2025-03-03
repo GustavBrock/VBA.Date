@@ -2,7 +2,7 @@ Attribute VB_Name = "DateFind"
 Option Explicit
 '
 ' DateFind
-' Version 1.2.1
+' Version 1.2.2
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -76,6 +76,52 @@ Public Function DateAddMonth( _
     End If
     
     DateAddMonth = DateNext
+    
+End Function
+
+' Find the nearest weekday, past or future, for a given date.
+' Optionally, specify if the previous, same, or subsequent date of the weekday
+' should be returned in case the searched weekday is that of the given date.
+'
+' If the weekday is that of the base date, argument Bias may be specified:
+'
+'   Bias = 0: The base date (default)
+'   Bias > 0: The next date of weekday
+'   Bias < 0: The previous date of weekday
+'
+' Returns the found date of the weekday to find including the time part of the base date.
+'
+' 2025-02-03. Gustav Brock. Cactus Data ApS, CPH.
+'
+Public Function DateNearestWeekday( _
+    ByVal BaseDate As Date, _
+    ByVal DayOfWeek As VbDayOfWeek, _
+    Optional ByVal Bias As Integer) _
+    As Date
+    
+    Dim BaseWeekday As VbDayOfWeek
+    Dim OffsetMajor As Integer
+    Dim OffsetMinor As Integer
+    Dim Offset      As Integer
+    Dim WeekdayDate As Date
+
+    ' The weekday of the base date.
+    BaseWeekday = Weekday(BaseDate)
+
+    ' Calculate the day count from the base date to the previous and the following weekday.
+    OffsetMinor = (BaseWeekday - DayOfWeek + DaysPerWeek) Mod DaysPerWeek
+    OffsetMajor = (DayOfWeek - BaseWeekday + DaysPerWeek) Mod DaysPerWeek
+    
+    If OffsetMajor = OffsetMinor Then
+        Offset = Sgn(Bias) * DaysPerWeek
+    ElseIf OffsetMajor < OffsetMinor Then
+        Offset = OffsetMajor
+    ElseIf OffsetMajor > OffsetMinor Then
+        Offset = -OffsetMinor
+    End If
+    WeekdayDate = DateAdd(IntervalSetting(dtDay), Offset, BaseDate)
+    
+    DateNearestWeekday = WeekdayDate
     
 End Function
 
