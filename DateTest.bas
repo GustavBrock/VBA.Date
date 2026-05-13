@@ -2,7 +2,7 @@ Attribute VB_Name = "DateTest"
 Option Explicit
 '
 ' DateTest
-' Version 1.2.5
+' Version 1.2.6
 '
 ' (c) Gustav Brock, Cactus Data ApS, CPH
 ' https://github.com/GustavBrock/VBA.Date
@@ -282,6 +282,34 @@ Public Sub TestDateFinancial()
 
 End Sub
 
+' List 100 entries from the current second with a step of 1ms.
+'
+' 2021-08-02. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Sub TestMillisecond()
+
+    Dim MSecs(0 To 99)  As Date
+    
+    Dim Index           As Integer
+    Dim ThisMsec        As Date
+    Dim LastMsec        As Date
+    
+    ' Record the millisecond times.
+    For Index = LBound(MSecs) To UBound(MSecs)
+        Do
+            ThisMsec = NowMsec
+        Loop Until ThisMsec > LastMsec
+        MSecs(Index) = ThisMsec
+        LastMsec = ThisMsec
+    Next
+    
+    ' List the millisecond times.
+    For Index = LBound(MSecs) To UBound(MSecs)
+        Debug.Print DebugDate(MSecs(Index))
+    Next
+    
+End Sub
+
 ' Print the five days and the semimonths' numbers around a semimonth shift
 ' for a sequence of 20 semimonths.
 '
@@ -419,6 +447,54 @@ Public Function TheFortnights()
     Next
     
 End Function
+
+' List those years of the entire range of Date where the ISO 8601 weeknumber of
+' the ultimo date is returned by DatePart as 53 where it actually is 1.
+' These dates are always Monday.
+'
+' Expected output (2026-05-13):
+'
+'   Year: 300     Weekday: 1
+'   Year: 700     Weekday: 1
+'   Year: 1100    Weekday: 1
+'   Year: 1500    Weekday: 1
+'   Year: 1900    Weekday: 1
+'   Year: 2300    Weekday: 1
+'   Year: 2700    Weekday: 1
+'   Year: 3100    Weekday: 1
+'   Year: 3500    Weekday: 1
+'   Year: 3900    Weekday: 1
+'   Year: 4300    Weekday: 1
+'   Year: 4700    Weekday: 1
+'   Year: 5100    Weekday: 1
+'   Year: 5500    Weekday: 1
+'   Year: 5900    Weekday: 1
+'   Year: 6300    Weekday: 1
+'   Year: 6700    Weekday: 1
+'   Year: 7100    Weekday: 1
+'   Year: 7500    Weekday: 1
+'   Year: 7900    Weekday: 1
+'   Year: 8300    Weekday: 1
+'   Year: 8700    Weekday: 1
+'   Year: 9100    Weekday: 1
+'   Year: 9500    Weekday: 1
+'   Year: 9900    Weekday: 1
+'
+' 2026-05-13. Gustav Brock, Cactus Data ApS, CPH.
+'
+Public Sub TheIso8601UltimoWeeks()
+
+    Dim ThisYear            As Integer
+    Dim UltimoDate          As Date
+    
+    For ThisYear = Year(MinDateValue) To Year(MaxDateValue)
+        UltimoDate = DateSerial(ThisYear, MaxMonthValue, MaxDayValue)
+        If DatePart(IntervalSetting(dtWeek), UltimoDate, vbMonday, vbFirstFourDays) <> Week(UltimoDate) Then
+            Debug.Print "Year: " & ThisYear, "Weekday: " & Weekday(UltimoDate, vbMonday)
+        End If
+    Next
+    
+End Sub
 
 ' Counts errors when displaying the seconds of the last day, 9999-12-31, of Date.
 '
@@ -689,30 +765,3 @@ Public Function VbeVersion() As String
 
 End Function
 
-' List 100 entries from the current second with a step of 1ms.
-'
-' 2021-08-02. Gustav Brock, Cactus Data ApS, CPH.
-'
-Public Sub TestMillisecond()
-
-    Dim MSecs(0 To 99)  As Date
-    
-    Dim Index           As Integer
-    Dim ThisMsec        As Date
-    Dim LastMsec        As Date
-    
-    ' Record the millisecond times.
-    For Index = LBound(MSecs) To UBound(MSecs)
-        Do
-            ThisMsec = NowMsec
-        Loop Until ThisMsec > LastMsec
-        MSecs(Index) = ThisMsec
-        LastMsec = ThisMsec
-    Next
-    
-    ' List the millisecond times.
-    For Index = LBound(MSecs) To UBound(MSecs)
-        Debug.Print DebugDate(MSecs(Index))
-    Next
-    
-End Sub
